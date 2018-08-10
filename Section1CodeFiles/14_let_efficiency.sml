@@ -19,6 +19,7 @@ fun good_max (xs : int list) =
     then hd xs
     else
 	(* for style, could also use a let-binding for (hd xs) *)
+    (* MUST use "let" expression for ANY local function variable binding *)
 	let val tl_ans = good_max(tl xs)
 	in
 	    if hd xs > tl_ans
