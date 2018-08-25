@@ -5,6 +5,7 @@ datatype mytype = TwoInts of int * int
                 | Str of string 
                 | Pizza
 
+(* equivalent to: "fun f(x:mytype)" *)
 fun f x = 
     case x of 
 	Pizza => 3 

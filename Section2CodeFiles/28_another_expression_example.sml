@@ -17,7 +17,7 @@ fun max_constant e =
 		if m1 > m2 then m1 else m2 
 	    end
     in
-	case e of
+	case e of 
 	    Constant i      => i
 	  | Negate e2       => max_constant e2
 	  | Add(e1,e2)      => max_of_two(e1,e2)
