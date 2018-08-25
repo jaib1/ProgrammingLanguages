@@ -14,25 +14,23 @@ fun is_older(x:(int*int*int), y:(int*int*int)) =
 (* Takes a list of dates in above tuple format, and a single month, 
 and returns number of listed dates which are in that month*)
 fun number_in_month(dates:(int*int*int) list, month:int) = 
-	let 
-		val matches = 0
-	in
-		if null(dates)
-		then
-			matches
-		else	
-			let 
-				val hd_ans = hd(dates)
-			in
-				if #2(hd_ans) = month
-				then
-					matches + 1 + number_in_month(tl(dates), month)
-				else
-					matches + number_in_month(tl(dates), month)
-			end
+	if null(dates)
+	then
+		0
+	else	
+		let 
+			val hd_ans = hd(dates)
+		in
+			if #2(hd_ans) = month
+			then
+				1 + number_in_month(tl(dates), month)
+			else
+				number_in_month(tl(dates), month)
+		end
 	end
 
 (* Same as above, but now for a list of months*)
+(*
 fun number_in_months(dates:(int*int*int) list, months:int list) = 
 	if null(dates) orelse null(months)
 	then
@@ -47,6 +45,6 @@ fun number_in_months(dates:(int*int*int) list, months:int list) =
 		in
 			matches + number_in_month(dates, hd(tl_months))
 		end
-
+*)
 
 
