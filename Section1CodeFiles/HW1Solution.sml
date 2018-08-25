@@ -27,7 +27,6 @@ fun number_in_month(dates:(int*int*int) list, month:int) =
 			else
 				number_in_month(tl(dates), month)
 		end
-	end
 
 (* Same as above, but now for a list of months*)
 (*
