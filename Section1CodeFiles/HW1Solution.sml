@@ -12,7 +12,7 @@ fun is_older(date1:(int*int*int), date2:(int*int*int)) =
 		 #3(date1) < #3(date2)
 
 (* Takes a list of dates in above tuple format, and a single month, 
-and returns number of listed dates which are in that month*)
+and returns number of listed dates which are in that month *)
 fun number_in_month(dates:(int*int*int) list, month:int) = 
 	if null(dates)
 	then
@@ -91,8 +91,8 @@ fun date_to_string(date:(int*int*int)) =
 		get_nth(stringsMonths, #2(date))^" "^Int.toString(#3(date))^", "^Int.toString(#1(date))
 	end
 
-(* add up numbers in an int list, compare to a set int, "sum", return the last 
-number in the int list that doesn't exceed "sum" *)
+(* add up numbers in an int list, compare to a set int, "sum", return the
+element number of the last number in the int list that doesn't exceed "sum" *)
 fun number_before_reaching_sum(sum:int, numList:int list) = 
 	if hd(numList) >= sum
 	then
@@ -149,6 +149,27 @@ fun oldest(dates:(int*int*int) list) =
 		in
 			helper(hd(dates), tl(dates))
 		end
+
+fun number_in_months_challenge(dates:(int*int*int) list, months:int list) =
+	if null(months)
+	then
+		0
+	else
+		let
+			fun rmvDuplicates(newMonths:int list, months:int list, cur_month:int) =
+				if null(months)
+				then
+					cur_month::newMonths
+				else if
+					cur_month = hd(months)
+				then
+					rmvDuplicates(newMonths, tl(months), hd(months))
+				else (* if we're still checking tl(months) for duplicates *)
+					rmvDuplicates(newMonths, tl(months), cur_month)
+		in
+			number_in_months(dates, rmvDuplicates([], tl(months), hd(months)))
+		end
+				
 
 
 
