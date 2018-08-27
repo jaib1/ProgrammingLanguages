@@ -131,6 +131,7 @@ fun month_range(day1:int, day2:int) =
 	else
 		what_month(day1)::month_range(day1+1, day2)
 
+(* returns an option "date" value of the oldest date in a list of dates*)
 fun oldest(dates:(int*int*int) list) =
 	if null(dates)
 	then
@@ -149,8 +150,11 @@ fun oldest(dates:(int*int*int) list) =
 		in
 			helper(hd(dates), tl(dates))
 		end
+(* --------------------------Challenge Problems-----------------------*)
 
-fun number_in_months_challenge(dates:(int*int*int) list, months:int list) =
+(* My attempt *)
+
+(* fun number_in_months_challenge(dates:(int*int*int) list, months:int list) =
 	if null(months)
 	then
 		0
@@ -164,15 +168,61 @@ fun number_in_months_challenge(dates:(int*int*int) list, months:int list) =
 					cur_month = hd(months)
 				then
 					rmvDuplicates(newMonths, tl(months), hd(months))
-				else (* if we're still checking tl(months) for duplicates *)
+				else if we're still checking tl(months) for duplicates
 					rmvDuplicates(newMonths, tl(months), cur_month)
 		in
 			number_in_months(dates, rmvDuplicates([], tl(months), hd(months)))
 		end
-				
+*)
 
+(* Sample Solutions *)
+(* quadratic algorithm rather than sorting which is nlog n *)
 
+(* returns a boolean of true when some int "x" is in an int list "xs",
+and false otherwise *)
+fun inMem(x:int, xs:int list) =
+	if null(xs)
+	then
+		false
+	else
+    	x = hd(xs) orelse inMem(x, tl(xs))
 
+fun rmvDuplicates(xs:int list) =
+    if null(xs)
+    then []
+    else
+        let 
+            val tl_ans = rmvDuplicates(tl(xs))
+        in
+            if inMem(hd(xs), tl_ans)
+            then 
+            	tl_ans
+            else 
+            	(hd xs)::tl_ans
+        end
+
+fun number_in_months_challenge(dates:(int*int*int) list, months:int list) =
+    number_in_months(dates, rmvDuplicates(months))
+
+fun dates_in_months_challenge(dates:(int*int*int) list, months:int list) =
+    dates_in_months(dates, rmvDuplicates(months))
+
+fun reasonable_date (date : int * int * int) =
+    let    
+        fun get_nth (lst : int list, n : int) =
+        if n=1
+        then hd lst
+        else get_nth(tl lst, n-1)
+        val year  = #1 date
+        val month = #2 date
+        val day   = #3 date
+        val leap  = year mod 400 = 0 orelse (year mod 4 = 0 andalso year mod 100 <> 0)
+        val feb_len = if leap then 29 else 28
+        val lengths = [31,feb_len,31,30,31,30,31,31,30,31,30,31]
+    in
+        year > 0 andalso month >= 1 andalso month <= 12
+        andalso day >= 1 andalso day <= get_nth(lengths,month)
+    end
 
 
 
