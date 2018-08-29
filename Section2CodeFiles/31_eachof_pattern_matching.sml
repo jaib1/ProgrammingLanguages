@@ -16,7 +16,7 @@ fun full_name2 (r : {first:string,middle:string,last:string}) =
 	x ^ " " ^ y ^ " " ^z
     end
 
-fun sum_triple2 triple =
+fun sum_triple2 triple = (* This way we only ever need one input arg *)
     let val (x,y,z) = triple 
     in 
         x + y + z 

@@ -176,8 +176,8 @@ fun oldest(dates:(int*int*int) list) =
 *)
 
 (* Sample Solutions *)
-(* quadratic algorithm rather than sorting which is nlog n *)
 
+(* quadratic algorithm rather than sorting which is nlog n *)
 (* returns a boolean of true when some int "x" is in an int list "xs",
 and false otherwise *)
 fun inMem(x:int, xs:int list) =
