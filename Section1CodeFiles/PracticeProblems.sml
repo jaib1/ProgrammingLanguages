@@ -6,7 +6,7 @@ fun alternate(xs : int list, altNum : int) =
 	else
 		altNum*hd(xs) + alternate(tl(xs), ~1*altNum)
 
-fun alternate2(x:int list) =
+fun alternateb(x:int list) =
     let
         fun helper(factor:int, x:int list) =
             if null x
