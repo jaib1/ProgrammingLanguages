@@ -71,16 +71,11 @@ fun dates_in_months(dates:(int*int*int) list, months: int list) =
 
 (* get "nth" string item in a string list *)
 fun get_nth(strings: string list, n:int) = (* add helper function for "ct" *)
-	let 
-		fun helper(ct: int, strings:string list, n:int) = 
-			if ct < n
-			then
-				helper(ct+1, tl(strings), n)
-			else
-				hd(strings)
-	in
-		helper(1, strings, n)
-	end
+	if n = 1
+	then
+		hd(strings)
+	else
+		get_nth(tl(strings), n-1)
 
 (* convert a date in int tuple format to string format *)
 fun date_to_string(date:(int*int*int)) = 
@@ -98,20 +93,7 @@ fun number_before_reaching_sum(sum:int, numList:int list) =
 	then
 		0
 	else
-		let 
-			fun helper(ct:int, sum:int, numList:int list, ct2:int) =
-				let
-					val cur_add = hd(tl(numList))
-				in
-					if ct + cur_add >= sum
-					then
-						ct2
-					else
-						helper(ct+cur_add, sum, tl(numList), ct2+1)
-				end
-			in
-				helper(hd(numList), sum, numList, 1)
-			end
+		1 + number_before_reaching_sum(sum-hd(numList), tl(numList))
 
 (* returns the month (in integer form) in which the integer labeled day is in, 
 based on a 365 day calendar*)
