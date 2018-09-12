@@ -82,7 +82,8 @@ fun similar_names(hdxs::xs', {first = frst, middle = mid, last = fin}) =
 	in
 		helper(frstSubs, [{first = frst, middle = mid, last = fin}])
 	end
-	| similar_names([], {first = frst, middle = mid, last = fin}) = [{first = frst, middle = mid, last = fin}]
+	| similar_names([], {first = frst, middle = mid, last = fin}) = 
+		[{first = frst, middle = mid, last = fin}]
 
 
 (* you may assume that Num is always used with values 2, 3, ..., 10
@@ -97,3 +98,77 @@ datatype move = Discard of card | Draw
 exception IllegalMove
 
 (* put your solutions for problem 2 here *)
+
+(* Takes a card, returns the color *)
+fun card_color(suit, rank) = 
+	case suit of
+		Clubs => Black
+		| Spades => Black
+		| Hearts => Red
+		| Diamonds => Red
+
+(* Takes a card, returns the value *)
+fun card_value(suit, rank) = 
+	case rank of
+		Num(n) => n
+		| Ace => 11
+		| _ => 10
+
+(* Removes a matching card from a deck of cards *)
+fun remove_card(hdcs::cs', c, e) = 
+	if not(inMem(hdcs::cs', c))
+	then
+		raise e
+	else 
+		let fun helper(hdcs::cs', c, e) =
+			if c = hdcs
+			then
+				cs'
+			else
+				helper(cs'@[hdcs], c, e)
+			| helper([],c,e) = []
+		in
+			helper(hdcs::cs', c, e)
+		end
+
+(* Takes a deck of cards and checks to see if all same color, returns
+a boolean*)
+fun all_same_color(hdcs::hdcs2::cs') = 
+	if card_color(hdcs) = card_color(hdcs2)
+	then
+		all_same_color(hdcs2::cs')
+	else
+		false
+	| all_same_color([]) = true
+
+(* Adds together values of a deck of cards *)
+fun sum_cards(hdcs::cs') = 
+	let fun helper(hdcs::cs', acc) = helper(cs', acc + card_value(hdcs))
+		| helper([], acc) = acc
+	in
+		helper(hdcs::cs', 0)
+	end
+
+fun score(cs, goal) = 
+	let val sum = sum_cards(cs)
+		val bonus = all_same_color(cs)
+	in
+		if (sum > goal andalso bonus) then 3*(sum-goal) div 2
+		else if	(sum > goal) then 3*(sum-goal)
+		else if	(sum < goal andalso bonus) then (sum-goal) div 2
+		else sum-goal
+	end
+
+fun officiate(cs, ms, goal) =
+	let fun helper([], ms, goal, hand) = score(hand, goal)
+		| helper(cs, [], goal, hand) = score(hand, goal)
+		| helper (hdcs::cs', hdms::ms', goal, hand) =
+			case hdms of 
+				Draw => if sum_cards(hand) > goal then score(hand,goal) else helper(cs', ms', goal, [hdcs]@hand)
+		 		| Discard(c) => if sum_cards(hand) > goal then score(hand,goal) else helper(cs', ms', goal, remove_card(hand, c, IllegalMove))
+	in
+		helper(cs, ms, goal, [])
+	end
+
+
+
