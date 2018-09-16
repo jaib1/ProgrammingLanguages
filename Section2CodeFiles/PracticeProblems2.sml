@@ -27,7 +27,7 @@ fun addOptAll2(x) = (* x will pattern-match: int option list*)
 		helper(x, 0)
 	end
 
-(* As above, but with "pattern-matching in function binding" *)
+(* As above, but with pattern-matching in function binding *)
 fun addOptAll2b(x) =  
 	let 
 		fun helper ([],acc) = SOME(acc)

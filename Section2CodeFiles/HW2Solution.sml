@@ -26,7 +26,7 @@ fun all_except_option(x, hdxs::xs') =
 		then
 			SOME(xs')
 	else
-		all_except_option(x, xs')
+		all_except_option(x, xs'@[hdxs])
 	| all_except_option(x, []) = NONE
 
 (* Same as above, but returns the list itself, not an option list*)
@@ -56,15 +56,14 @@ fun get_substitutions1(hdxs::xs', x) =
 
 (* Same as above, but using TCO *)
 fun get_substitutions2(hdxs::xs', x) = 
-	let val acc = []
-		fun helper(hdxs::xs', x, acc) =
+	let fun helper(hdxs::xs', x, acc) =
 			let val curAcc = all_except_option2(x, hdxs)
 			in
 				helper(xs', x, acc@curAcc)
 			end
 			| helper([],x,acc) = acc
 	in
-		helper(hdxs::xs', x, acc)
+		helper(hdxs::xs', x, [])
 	end
 	| get_substitutions2([],x) = []
 
@@ -119,17 +118,12 @@ fun remove_card(hdcs::cs', c, e) =
 	if not(inMem(hdcs::cs', c))
 	then
 		raise e
-	else 
-		let fun helper(hdcs::cs', c, e) =
-			if c = hdcs
-			then
-				cs'
-			else
-				helper(cs'@[hdcs], c, e)
-			| helper([],c,e) = []
-		in
-			helper(hdcs::cs', c, e)
-		end
+	else if c = hdcs
+		then
+			cs'
+	else (* c is somewhere in cs, but not at the head *)
+		remove_card(cs'@[hdcs], c, e) (* move c to the back of the list and continue*)
+	| remove_card([],c,e) = raise e
 
 (* Takes a deck of cards and checks to see if all same color, returns
 a boolean*)
@@ -139,6 +133,7 @@ fun all_same_color(hdcs::hdcs2::cs') =
 		all_same_color(hdcs2::cs')
 	else
 		false
+	| all_same_color(hdcs::[]) = true
 	| all_same_color([]) = true
 
 (* Adds together values of a deck of cards *)
@@ -148,6 +143,7 @@ fun sum_cards(hdcs::cs') =
 	in
 		helper(hdcs::cs', 0)
 	end
+	| sum_cards([]) = 0
 
 fun score(cs, goal) = 
 	let val sum = sum_cards(cs)
@@ -155,20 +151,23 @@ fun score(cs, goal) =
 	in
 		if (sum > goal andalso bonus) then 3*(sum-goal) div 2
 		else if	(sum > goal) then 3*(sum-goal)
-		else if	(sum < goal andalso bonus) then (sum-goal) div 2
-		else sum-goal
+		else if	(sum < goal andalso bonus) then (goal-sum) div 2
+		else goal-sum
 	end
 
 fun officiate(cs, ms, goal) =
 	let fun helper([], ms, goal, hand) = score(hand, goal)
 		| helper(cs, [], goal, hand) = score(hand, goal)
 		| helper (hdcs::cs', hdms::ms', goal, hand) =
-			case hdms of 
-				Draw => if sum_cards(hand) > goal then score(hand,goal) else helper(cs', ms', goal, [hdcs]@hand)
-		 		| Discard(c) => if sum_cards(hand) > goal then score(hand,goal) else helper(cs', ms', goal, remove_card(hand, c, IllegalMove))
+			if sum_cards(hand) > goal 
+			then
+				score(hand, goal)
+			else
+				case hdms of 
+					Draw => helper(cs', ms', goal, [hdcs]@hand)
+		 			| Discard(c) => helper(cs', ms', goal, remove_card(hand, c, IllegalMove))
 	in
 		helper(cs, ms, goal, [])
 	end
-
 
 
