@@ -29,5 +29,5 @@ fun triple_n_times4 (n,x) = n_times((fn y => 3*y), n, x)
 (* because triple_n_times4 does not call itself, we could use a val-binding
    to define it, but the fun binding above is better style *)
   (* This example shows that if not for recursion, we could just think of fun
-   	bindings as syntactic sugar for val bindings and anonymous function*)
+   	bindings as syntactic sugar for val bindings + an anonymous function*)
 val triple_n_times5 = fn (n,x) => n_times((fn y => 3*y), n, x)

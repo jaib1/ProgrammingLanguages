@@ -164,8 +164,8 @@ fun officiate(cs, ms, goal) =
 				score(hand, goal)
 			else
 				case hdms of 
-					Draw => helper(cs', ms', goal, [hdcs]@hand)
-		 			| Discard(c) => helper(cs', ms', goal, remove_card(hand, c, IllegalMove))
+					Draw => helper(cs', ms', goal, hdcs::hand)
+		 			| Discard(c) => helper(hdcs::cs', ms', goal, remove_card(hand, c, IllegalMove))
 	in
 		helper(cs, ms, goal, [])
 	end
