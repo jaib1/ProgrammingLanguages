@@ -1,0 +1,74 @@
+#lang slideshow
+(define c (circle 10))
+(define r (rectangle 10 20))
+
+(hc-append 1 c r c)
+
+(define (square n)
+  ; function with a filled square
+  (filled-rectangle n n))
+
+(define s (square 10))
+
+(define (four p)
+  (define two-p (hc-append p p))
+  (vc-append two-p two-p))
+
+(four c)
+
+(define (checker p1 p2)
+  (let ([p12 (hc-append p1 p2)]
+        [p21 (hc-append p2 p1)])
+    (vc-append p12 p21)))
+
+(checker (colorize (square 10) "red")
+         (colorize (square 10) "black"))
+
+(define (checkerboard n)
+  (let* ([rp (colorize n "red")]
+         [bp (colorize n "black")]
+         [c (checker rp bp)]
+         [c4 (four c)])
+    (four c4)))
+
+(checkerboard (square 10))
+
+(define (series mk)
+  (hc-append 4 (mk 5) (mk 10) (mk 20)))
+
+(series circle)
+
+(series square)
+
+(series (lambda (sz) (checkerboard (circle sz))))
+
+(series (lambda (sz) (checkerboard (square sz))))
+
+(list (circle 10) (square 10))
+
+(define (rainbow p)
+  (map (lambda (color)
+         (colorize p color))
+       (list "red" "orange" "yellow" "green" "blue" "purple")))
+
+(rainbow (square 10))
+
+(apply vc-append (rainbow (square 10)))
+
+; import pict-flash library (the module implemented in the file
+; "flash.rkt"
+(require pict/flash)
+
+(filled-flash 40 30)
+
+(require slideshow/code)
+
+; introducing new syntax (a macro): 
+
+(define-syntax pict+code
+  (syntax-rules ()
+    [(pict+code e)
+     (hc-append 10 e (code e))]))
+
+(pict+code (square 20))
+
