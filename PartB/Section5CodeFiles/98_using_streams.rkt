@@ -9,10 +9,13 @@
 
 ;; define some streams
 
-;(define ones-really-bad (cons 1 ones-really-bad))
-(define ones-bad (lambda () (cons 1 (ones-bad))))
+;(define ones-really-bad (cons 1 ones-really-bad)) ;- will not compile
+(define ones-bad (lambda () (cons 1 (ones-bad)))) ; infinite loop
 
 (define ones (lambda () (cons 1 ones)))
+
+(define (f x) (cons x (lambda () (f (+ x 1)))))
+(define nats0 (lambda () (f 1)))
 
 (define nats
   (letrec ([f (lambda (x) (cons x (lambda () (f (+ x 1)))))])
