@@ -30,22 +30,21 @@ fun eval_exp_old e =
 exception Error of string
 
 fun eval_exp_new e =
-    let
-	fun get_int e =
-	    case e of
-		Const i => i
-	      | _ => raise (Error "expected Const result")
-    in
-	case e of
-            Const _ => 
-	    e
-	  | Negate e2  => 
-	    Const (~ (get_int (eval_exp_new e2)))
-	  | Add(e1,e2) => 
-	    Const ((get_int (eval_exp_new e1)) + (get_int (eval_exp_new e2)))
-	  | Multiply(e1,e2) => 
-	    Const ((get_int (eval_exp_new e1)) * (get_int (eval_exp_new e2)))
-    end
+  let
+    fun get_int e =
+      case e of
+        Const i => i
+        | _ => raise (Error "expected Const result")
+      in
+        case e of
+          Const _ => e
+          | Negate e2  => 
+              Const (~ (get_int (eval_exp_new e2)))
+          | Add(e1,e2) => 
+              Const ((get_int (eval_exp_new e1)) + (get_int (eval_exp_new e2)))
+          | Multiply(e1,e2) => 
+              Const ((get_int (eval_exp_new e1)) * (get_int (eval_exp_new e2)))
+        end
 
 val test_exp = Multiply (Negate (Add (Const 2,Const 2)), Const 7)
 val old_test = eval_exp_old test_exp (* ~28 *)
