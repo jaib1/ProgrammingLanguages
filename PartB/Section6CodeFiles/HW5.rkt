@@ -32,10 +32,12 @@
 (define (mupllist->racketlist Mlst)
   (if (aunit? Mlst)
       null
-      (cons (fst Mlst) (mupllist->racketlist (snd Mlst)))))
+      (cons (eval-exp (fst Mlst)) (mupllist->racketlist (eval-exp (snd Mlst))))))
                               
 
 ;; CHANGE (put your solutions here)
+
+;;*NOTE: the environment is a list of pairs (var -> val)
 
 ;; Problem 2
 
@@ -43,7 +45,7 @@
 ;; Do NOT change this function
 (define (envlookup env str)
   (cond [(null? env) (error "unbound variable during evaluation" str)]
-        [(equal? (car (car env)) str) (cdr (car env))]
+        [(equal? (car (car env)) str) (cdr (car env))] ; if we find the matching variable name, extract the value from that var-val pair in th eenv
         [#t (envlookup (cdr env) str)]))
 
 ;; Do NOT change the two cases given to you.  
@@ -62,7 +64,18 @@
                (int (+ (int-num v1) 
                        (int-num v2)))
                (error "MUPL addition applied to non-number")))]
+        
         ;; CHANGE add more cases here
+
+        [(int? e) e]
+
+        [(closure? e) e]
+
+        [(aunit? e) e]
+
+        [(isaunit? e)
+         (let ([v (eval-under-env (isaunit-e e))])
+           (if (aunit? v) (int 1) (int 0)))]
         
         [(apair? e)
         (let ([v1 (eval-under-env (apair-e1 e) env)]
@@ -70,12 +83,44 @@
           (apair v1 v2))]      
 
         [(fst? e)
-        (let ([v (eval-under-env (fst-e e) env)]))
+        (let ([v (eval-under-env (fst-e e) env)])
           (if (apair? v)
               (apair-e1 v)
-              (error "'fst?' not applied to apair"))]
+              (error "'fst' not applied to apair")))]
 
-        [(snd? e) ...]
+        [(snd? e)
+         (let ([v (eval-under-env (snd-e e) env)])
+           (if (apair? v)
+               (apair-e2 v)
+               (error "'snd' not applied to apair")))]
+
+        [(fun? e)
+         (closure env e)]
+
+        [(ifgreater? e) ; if e1 > e2 then e3 else e4
+         (let ([v1 (eval-under-env (ifgreater-e1 e) env)]
+               [v2 (eval-under-env (ifgreater-e2 e) env)]
+               [v3 (eval-under-env (ifgreater-e3 e) env)]
+               [v4 (eval-under-env (ifgreater-e4 e) env)])
+           (if (and (int? v1) (int? v2))
+               (if (> (int-num v1) (int-num v2))
+                   v3
+                   v4)
+               (error "'ifgreater' not applied to two ints")))]
+
+        [(mlet? e) ; (mlet var e body)
+         (let* ([vName (mlet-var e)] ; get the variable name
+               [val (eval-under-env (mlet-e e) env)] ; get the value
+               [curEnv (append (list (cons vName val)) env)]) ; append the new vName-val pair to the env
+           (eval-under-env (mlet-body e) curEnv))] ; evaluate the body of mlet in curEnv
+
+        [(call? e) ; (call funexp actual) ... clsr-env clsr-fun
+         (let* ([clsr (eval-under-env (call-funexp e))])
+           (if (not (closure? clsr))
+               (error "'call' not applied to a valid closure")
+               ; else, begin evaluation of clsr function body in env
+               (let* ([fName (fun-nameopt (clsr-fun clsr))] ; create variable with function name              
+                      
 
         [#t (error (format "bad MUPL expression: ~v" e))]))
 
