@@ -32,7 +32,11 @@
 (define (mupllist->racketlist Mlst)
   (if (aunit? Mlst)
       null
-      (cons (eval-exp (fst Mlst)) (mupllist->racketlist (eval-exp (snd Mlst))))))
+      (cons (apair-e1 Mlst) (mupllist->racketlist (apair-e2 Mlst)))))
+
+; didn't use (eval-exp (fst...) and (eval-exp (snd...) here because this would allow
+; the function to work on non-MUPL values, and lead to "bad MUPL expression" error thrown
+; in eval-exp, which is poor style (apparently, the grader thinks this...)
                               
 
 ;; CHANGE (put your solutions here)
@@ -74,7 +78,7 @@
         [(aunit? e) e]
 
         [(isaunit? e)
-         (let ([v (eval-under-env (isaunit-e e))])
+         (let ([v (eval-under-env (isaunit-e e) env)])
            (if (aunit? v) (int 1) (int 0)))]
         
         [(apair? e)
@@ -114,13 +118,34 @@
                [curEnv (append (list (cons vName val)) env)]) ; append the new vName-val pair to the env
            (eval-under-env (mlet-body e) curEnv))] ; evaluate the body of mlet in curEnv
 
+        
+        ; a call evaluates a function body in a particular environment
         [(call? e) ; (call funexp actual) ... clsr-env clsr-fun
-         (let* ([clsr (eval-under-env (call-funexp e))])
+         (let* ([clsr (eval-under-env (call-funexp e) env)]) ; get the current closure
            (if (not (closure? clsr))
                (error "'call' not applied to a valid closure")
                ; else, begin evaluation of clsr function body in env
-               (let* ([fName (fun-nameopt (clsr-fun clsr))] ; create variable with function name              
+               (let* ([f (closure-fun clsr)] ; create variable of function in closure
+                      [clsrEnv (closure-env clsr)] ; create variable of environment in closure
+                      [fName (fun-nameopt f)] ; create variable with function name of f
                       
+                      ; now we need to extend the closure environment to include the given function
+                      ; and we need to evaluate the function body in that extended environmeent
+                      ; with the actual parameters given to the function
+
+                      ; so, first: if there is a fName (i.e. not an anon function),
+                      ; then we extend environment with fName and its closure
+                      [clsrEnv (if fName (append (list (cons fName clsr)) clsrEnv) clsrEnv)]
+                      ; then we want to get the formal parameters from the function in clsr
+                      [formals (fun-formal f)]
+                      ; then we want to get the values of the actual parameters in the current environment
+                      [actuals (eval-under-env (call-actual e) env)]
+                      ; then we want to add the formals-actuals pair to the environment
+                      [clsrEnv (append (list (cons formals actuals) clsrEnv))]
+                      ; then we want to get the function body in which we will evaluate this new, extended clsrEnv
+                      [fBody (fun-body f)])
+                 ; lastly we evaluate the new formals-actuals pairs in fBody as included the clsrEnv list of pairs 
+                 (eval-under-env fBody clsrEnv))))]
 
         [#t (error (format "bad MUPL expression: ~v" e))]))
 
@@ -128,21 +153,61 @@
 (define (eval-exp e)
   (eval-under-env e null))
         
-;; Problem 3
+;; Problem 3 : writing racket functions that work like MUPL macros
 
-(define (ifaunit e1 e2 e3) "CHANGE")
+(define (ifaunit e1 e2 e3) (ifgreater (isaunit e1) (int 0) e2 e3))
 
-(define (mlet* lstlst e2) "CHANGE")
+; evaluate e2 in an environment where each s_i is bound to the evaluation of e_i
+; and each pair is evaluated sequentially in an environment that is continuously updating
+(define (mlet* lstlst e2)
+  (if (null? lstlst)
+      e2
+      ; (mlet var e body)
+      (mlet (car (car lstlst)) #|var s_i|# (cdr (car lstlst)) #|val e_i|# (mlet* (cdr lstlst) e2)))) #|expression to be evaluated stays the same|#  
+ 
+; evaluate e3 only if e1 and e2 are equal
+; would have been much easier if we could have added something like an "isequal"
+; structure to our MUPL language, but not allowed to add any new structs
 
-(define (ifeq e1 e2 e3 e4) "CHANGE")
+(define (ifeq e1 e2 e3 e4)
+  (mlet "_x" e1 #|start of body of first mlet|#
+        (mlet "_y" e2 #|start of body of second mlet|#
+              ; we'll use a nested "ifgreater" to compare equality of
+              ; "_x" and "_y":
+              (ifgreater (var "_x") (var "_y")
+                         e4 ; e3 in "ifgreater"
+                         (ifgreater (var "_y") (var "_x") ; use entire nested "ifgreater" as e4 for outer "ifgreater"
+                                    e4
+                                    e3)))))
 
 ;; Problem 4
 
-(define mupl-map "CHANGE")
+; mupl-map: a function that takes a MUPL function and returns a MUPL function
+; that takes a MUPL list and applies this function to every element in the MUPL list,
+; creating a new MUPL list (i.e. mupl-map is curried)
+(define mupl-map
+  ; we will have to use nested MUPL "fun" structures where we use MUPL "call"
+  ; within in order to evaluate the nested function
+  
+  ; fun (nameopt formal body)
+  ; call (funexp actual)
+
+  ; we'll want to cons the head of mList evaluated with "fTaken" from "f1"
+  ; in "f2", to the tail of mList evaluated with "f2" (recursively) 
+  (fun "f1" "fTaken" ; nameopt and formal of outer function 
+       (fun "f2" "mList" ; begin body of outer function (and nameopt and formal of nested function)
+            (ifaunit (var "mList") ; if we're at the end of mList
+                     (aunit) ; return aunit
+                     (apair ; else
+                      (call (var "fTaken") (fst (var "mList"))) ; call "fTaken" on first element of mList
+                      (call (var "f2") (snd (var "mList")))))))) ; and cons it to calling "f2" on tail of mList
+
 
 (define mupl-mapAddN 
   (mlet "map" mupl-map
-        "CHANGE (notice map is now in MUPL scope)"))
+        (fun #f "i"
+             (call (var "map") (fun #f "i2"
+                                    (add (var "i") (var "i2")))))))
 
 ;; Challenge Problem
 
