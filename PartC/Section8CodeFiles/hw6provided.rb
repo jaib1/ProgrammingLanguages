@@ -177,6 +177,13 @@ class Board
     end
     draw
   end
+
+  def rotate180
+    if !game_over? and @game.is_running?
+      @current_block.move(0, 0, 2)
+    end
+    draw
+  end
   
   # drops the piece to the lowest location in the currently occupied columns.
   # Then replaces it with a new piece
@@ -306,6 +313,7 @@ class Tetris
     @root.bind('Up', proc {@board.rotate_counter_clockwise}) 
     
     @root.bind('space' , proc {@board.drop_all_the_way}) 
+
   end
 
   def buttons
