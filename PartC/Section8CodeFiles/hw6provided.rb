@@ -206,7 +206,7 @@ class Board
     end
   end
 
-  # gets the next piece
+  # gets the next piece and positions it
   def next_piece
     @current_block = Piece.next_piece(self)
     @current_pos = nil
