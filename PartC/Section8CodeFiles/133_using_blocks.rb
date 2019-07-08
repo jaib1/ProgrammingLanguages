@@ -2,6 +2,9 @@
 # Section 7: Using Blocks
 
 class Foo
+  
+  attr_accessor :max
+
   def initialize(max)
     @max = max
   end
@@ -19,6 +22,7 @@ class Foo
       1 + (count(base+1) {|i| yield i})
     end
   end
+
 end
 
 #f = Foo.new(1000)

@@ -1,0 +1,19 @@
+Things to add to tetris:
+
+- high score [x]
+
+- speed up - left click (& on increase in total # pieces counter)
+
+- slow down - right click
+
+- move piece up - backspace (3x)
+
+- drop 2 - down arrow
+
+- have string name changed to "play" and "pause" during play/pause
+
+- "J" piece
+
+- "J" - bonus (1x)
+
+- ": )" - clear board (1x) (clear counter after a piece drops)
